@@ -1,5 +1,6 @@
-use git_less::hello;
+use git_less::command;
 
 fn main() {
-    hello();
+    let command = command::build_command();
+    command.get_matches();
 }
