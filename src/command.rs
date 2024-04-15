@@ -1,5 +1,5 @@
 use std::io::IsTerminal;
-use clap:: {crate_name, crate_version, ColorChoice, Command, Arg};
+use clap:: {crate_name, crate_version, ColorChoice, Command, Arg, ArgAction};
 
 pub fn build_command() -> Command {
 	let interactive_output = std::io::stdout().is_terminal();
@@ -36,7 +36,7 @@ read the contents of the selected file with the `less` command."#)
 		)
 		.arg(
 			Arg::new("reference")
-				.long("reference")
+				.long("ref")
 				.short('r')
 				.help("A reference object such as `HEAD`, `origin/master`, etc")
 		)
@@ -44,6 +44,91 @@ read the contents of the selected file with the `less` command."#)
 			Arg::new("recursive")
 				.long("recursive")
 				.short('R')
+				.action(ArgAction::SetTrue)
 				.help("Add `--recursive` option to `ls-tree` command")
 		)
+}
+
+#[cfg(test)]
+mod test {
+	use super::*;
+
+	#[test]
+	fn blob_arg_exists() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "--blob", "object"]);
+		assert!(matches.get_one::<String>("blob").is_some());
+	}
+
+	#[test]
+	fn blob_arg_exists_shorthand() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "-b", "object"]);
+		assert!(matches.get_one::<String>("blob").is_some());
+	}
+
+	#[test]
+	fn blob_arg_match() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "--blob", "object"]);
+		match matches.get_one::<String>("blob") {
+			Some(result) => assert_eq!(result, "object"),
+			None => panic!("blob arg not found"),
+		}
+	}
+
+	#[test]
+	fn tree_arg_exists() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "--tree", "object"]);
+		assert!(matches.get_one::<String>("tree").is_some());
+	}
+
+	#[test]
+	fn tree_arg_exists_shorthand() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "-t", "object"]);
+		assert!(matches.get_one::<String>("tree").is_some());
+	}
+
+	#[test]
+	fn tree_arg_match() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "--tree", "object"]);
+		match matches.get_one::<String>("tree") {
+			Some(result) => assert_eq!(result, "object"),
+			None => panic!("tree arg not found"),
+		}
+	}
+
+	#[test]
+	fn ref_arg_exists() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "--ref", "object"]);
+		assert!(matches.get_one::<String>("reference").is_some());
+	}
+
+	#[test]
+	fn ref_arg_exists_shorthand() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "-r", "object"]);
+		assert!(matches.get_one::<String>("reference").is_some());
+	}
+
+	#[test]
+	fn ref_arg_match() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "--ref", "object"]);
+		match matches.get_one::<String>("reference") {
+			Some(result) => assert_eq!(result, "object"),
+			None => panic!("ref arg not found"),
+		}
+	}
+
+	#[test]
+	fn recursive_arg_exists() {
+		let command = build_command();
+		let matches = command.get_matches_from(vec!["git-less", "--recursive"]);
+		assert!(matches.args_present());
+	}
 }
