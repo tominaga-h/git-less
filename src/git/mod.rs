@@ -1,5 +1,6 @@
 pub mod object;
 pub mod exec;
+pub mod tree;
 
 pub struct Git {}
 

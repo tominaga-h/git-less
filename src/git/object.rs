@@ -2,7 +2,7 @@
 pub enum RepositoryObjectType {
 	Blob,
 	Tree,
-	Rev,
+	Revision,
 }
 
 #[derive(Clone, PartialEq)]
@@ -28,6 +28,21 @@ impl RepositoryObject {
 	}
 
 	pub fn revision(content: String) -> RepositoryObject {
-		RepositoryObject::new(content, RepositoryObjectType::Rev)
+		RepositoryObject::new(content, RepositoryObjectType::Revision)
+	}
+
+	pub fn to_arg(&self) -> &str {
+		self.content.as_str()
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_to_arg() {
+		let obj = RepositoryObject::blob("object".to_string());
+		assert_eq!("object", obj.to_arg());
 	}
 }

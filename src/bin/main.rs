@@ -1,6 +1,9 @@
-use git_less::command;
+use git_less::git::tree::GitTree;
 
 fn main() {
-    let command = command::build_command();
-    command.get_matches();
+	let result = GitTree::exec();
+	match result {
+		Ok(stdout) => println!("{}", stdout),
+		_ => println!("error"),
+	}
 }

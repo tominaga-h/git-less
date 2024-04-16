@@ -1,3 +1,5 @@
+use crate::git::object::RepositoryObject;
+use std::io::Read;
 use subprocess::{Exec, NullFile, ExitStatus};
 
 pub type Result<T> = subprocess::Result<T>;
@@ -7,11 +9,26 @@ pub fn exec_type_git() -> Result<ExitStatus> {
 	Exec::cmd("type").arg("git").stdout(NullFile).join()
 }
 
+/// execute `gt ls-tree` command and return stdout stream
+pub fn exec_ls_tree(rev: RepositoryObject) -> Result<impl Read> {
+	Exec::cmd("git").arg("ls-tree").arg(rev.to_arg()).stream_stdout()
+}
+
 /// extract exit code from `subprocess::ExitStatus`,
 /// return value when only ExitStatus is `ExitStatus::Exited`.
 pub fn extract_status_code(status: ExitStatus) -> Option<u32> {
 	match status {
 		ExitStatus::Exited(code) => Some(code),
+		_ => None,
+	}
+}
+
+/// get output from stream what `impl std::io::Read`
+pub fn get_output_from_stream(stream: &mut impl Read) -> Option<String> {
+	let mut output = String::new();
+	let result = stream.read_to_string(&mut output);
+	match result {
+		Ok(_) => Some(output),
 		_ => None,
 	}
 }
