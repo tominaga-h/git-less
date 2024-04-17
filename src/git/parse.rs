@@ -1,68 +1,65 @@
-
-
 use regex::Regex;
 use std::fmt;
 
 pub struct TreeParser {
-	pub tree: String,
+    pub tree: String,
 }
 
 impl TreeParser {
-	pub fn new(tree: String) -> TreeParser {
-		TreeParser {
-			tree,
-		}
-	}
+    pub fn new(tree: String) -> TreeParser {
+        TreeParser { tree }
+    }
 
-	pub fn parse(&self) -> Result<Vec<TreeItem>, ParseError> {
-		let mut items: Vec<TreeItem> = Vec::new();
-		let mut tree_lines: Vec<&str> = self.tree.split('\n').collect();
-		for line in tree_lines.iter_mut() {
-			if line.is_empty() { continue; }
-
-			// line example::
-			// 100644 blob ea8c4bf7f35f6f77f75d92ad8ce8349f6e81ddba    .gitignore
-			let re = Regex::new(r"^\d+\s+blob\s+([a-f0-9]{40})\s+(.+)$").unwrap();
-			let match_result = re.captures(line);
-			if let Some(caps) = match_result {
-				let hash = caps.get(1).map_or("", |m| m.as_str()).to_string();
-				let file = caps.get(2).map_or("", |m| m.as_str()).to_string();
-				items.push(TreeItem::new(hash, file));
-			} else {
-				let msg = format!("Failed to parse tree. source: '{}'", line);
-				return Err(ParseError::new(msg));
+    pub fn parse(&self) -> Result<Vec<TreeItem>, ParseError> {
+        let mut items: Vec<TreeItem> = Vec::new();
+        let mut tree_lines: Vec<&str> = self.tree.split('\n').collect();
+        for line in tree_lines.iter_mut() {
+            if line.is_empty() { continue; }
+            let parse_result = self.parse_line(line);
+			match parse_result {
+				Ok(item) => items.push(item),
+				Err(e) => return Err(e)
 			}
-		}
+        }
+        Ok(items)
+    }
 
-		Ok(items)
-	}
+    pub fn parse_line(&self, line: &mut &str) -> Result<TreeItem, ParseError> {
+        // line example::
+        // 100644 blob ea8c4bf7f35f6f77f75d92ad8ce8349f6e81ddba    .gitignore
+        let re = Regex::new(r"^\d+\s+blob\s+([a-f0-9]{40})\s+(.+)$").unwrap();
+        let match_result = re.captures(line);
+        if let Some(caps) = match_result {
+            let hash = caps.get(1).map_or("", |m| m.as_str()).to_string();
+            let file = caps.get(2).map_or("", |m| m.as_str()).to_string();
+            Ok(TreeItem::new(hash, file))
+        } else {
+            let msg = format!("Failed to parse tree. source: '{}'", line);
+            Err(ParseError::new(msg))
+        }
+    }
 }
 
 #[derive(Debug)]
 pub struct TreeItem {
-	pub hash: String,
-	pub file: String,
+    pub hash: String,
+    pub file: String,
 }
 
 impl TreeItem {
-	pub fn new(hash: String, file: String) -> TreeItem {
-		TreeItem {
-			hash,
-			file,
-		}
-	}
+    pub fn new(hash: String, file: String) -> TreeItem {
+        TreeItem { hash, file }
+    }
 }
 
 #[derive(Debug)]
 pub struct ParseError {
-	message: String
+    message: String,
 }
 
 impl ParseError {
     pub fn new(message: String) -> ParseError {
-        ParseError {
-            message,
-        }
+        ParseError { message }
     }
 }
 
