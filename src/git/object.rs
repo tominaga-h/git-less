@@ -31,6 +31,7 @@ impl RepositoryObject {
 		RepositoryObject::new(content, RepositoryObjectType::Revision)
 	}
 
+	/// convert `RepositoryObject` to `&str` for `subprocess::Exec` argument
 	pub fn to_arg(&self) -> &str {
 		self.content.as_str()
 	}
