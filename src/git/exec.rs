@@ -1,6 +1,6 @@
-use crate::git::object::RepositoryObject;
 use std::io::Read;
 use subprocess::{Exec, NullFile, ExitStatus};
+use crate::git::{object::RepositoryObject, tree::GitTreeOption};
 
 pub type Result<T> = subprocess::Result<T>;
 
@@ -10,8 +10,12 @@ pub fn exec_type_git() -> Result<ExitStatus> {
 }
 
 /// execute `gt ls-tree` command and return stdout stream
-pub fn exec_ls_tree(rev: RepositoryObject) -> Result<impl Read> {
-	Exec::cmd("git").arg("ls-tree").arg(rev.to_arg()).stream_stdout()
+pub fn exec_ls_tree(rev: RepositoryObject, option: GitTreeOption) -> Result<impl Read> {
+	Exec::cmd("git")
+		.arg("ls-tree")
+		.arg(if option.recursive { "-r" } else { "" })
+		.arg(rev.to_arg())
+		.stream_stdout()
 }
 
 /// extract exit code from `subprocess::ExitStatus`,
