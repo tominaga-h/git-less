@@ -1,8 +1,13 @@
 use core::panic;
 
-use git_less::git::{Git, tree::{GitTree, GitTreeOption}, object::RepositoryObject, parse::TreeParser};
+use git_less::git::{
+	Git,
+	tree::{GitTree, GitTreeOption},
+	object::RepositoryObject,
+	parse::TreeParser
+};
 
-fn main() {
+fn app() -> Result<(), Box<dyn std::error::Error>> {
 
 	let exists = Git::exists();
 	match exists {
@@ -14,15 +19,17 @@ fn main() {
 
 	let rev = RepositoryObject::revision("HEAD".to_string());
 	let option = GitTreeOption::new(true);
-	let result = GitTree::exec(rev, option);
-	if let Ok(output) = result {
-		let parser = TreeParser::new(output);
-		let items = parser.parse();
-		match items {
-			Ok(items) => println!("{:#?}", items),
-			Err(e) => eprintln!("{}", e)
-		}
-	} else {
-		panic!("error");
+	let output = GitTree::exec(rev, option)?;
+	let parser = TreeParser::new(output);
+	let items = parser.parse()?;
+	println!("{:#?}", items);
+	Ok(())
+}
+
+fn main() {
+	let result = app();
+	match result {
+		Ok(_) => (),
+		Err(e) => eprintln!("{}", e)
 	}
 }
