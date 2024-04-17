@@ -1,6 +1,6 @@
 use core::panic;
 
-use git_less::git::{Git, tree::{GitTree, GitTreeOption}, object::RepositoryObject};
+use git_less::git::{Git, tree::{GitTree, GitTreeOption}, object::RepositoryObject, parse::TreeParser};
 
 fn main() {
 
@@ -15,8 +15,14 @@ fn main() {
 	let rev = RepositoryObject::revision("HEAD".to_string());
 	let option = GitTreeOption::new(true);
 	let result = GitTree::exec(rev, option);
-	match result {
-		Ok(stdout) => println!("{}", stdout),
-		_ => println!("error"),
+	if let Ok(output) = result {
+		let parser = TreeParser::new(output);
+		let items = parser.parse();
+		match items {
+			Ok(items) => println!("{:#?}", items),
+			Err(e) => eprintln!("{}", e)
+		}
+	} else {
+		panic!("error");
 	}
 }
