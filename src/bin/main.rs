@@ -1,7 +1,8 @@
-use git_less::git::tree::GitTree;
+use git_less::git::{tree::GitTree, object::RepositoryObject};
 
 fn main() {
-	let result = GitTree::exec();
+	let rev = RepositoryObject::revision("HEAD".to_string());
+	let result = GitTree::exec(rev);
 	match result {
 		Ok(stdout) => println!("{}", stdout),
 		_ => println!("error"),
