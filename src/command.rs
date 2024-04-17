@@ -18,7 +18,7 @@ pub fn build_command() -> Command {
 		.about("A git-depended tool for read file contents.")
 		.long_about(r#"A git-depended tool for read file contents.
 
-You can input a repository object (blob, tree, branch, reviion) as
+You can input a repository object (blob, tree, branch, revision) as
 a command line argument. If you input a blob object, you can read its contents
 with the `less` command. If you input a tree, branch, or ref object, you can
 read the contents of the selected file with the `less` command."#)
@@ -35,10 +35,10 @@ read the contents of the selected file with the `less` command."#)
 				.help("A tree object")
 		)
 		.arg(
-			Arg::new("reviion")
+			Arg::new("revision")
 				.long("rev")
 				.short('r')
-				.help("A reviion object such as `HEAD`, `origin/master`, etc")
+				.help("A revision object such as `HEAD`, `origin/master`, etc")
 		)
 		.arg(
 			Arg::new("recursive")
@@ -105,21 +105,21 @@ mod test {
 	fn rev_arg_exists() {
 		let command = build_command();
 		let matches = command.get_matches_from(vec!["git-less", "--rev", "object"]);
-		assert!(matches.get_one::<String>("reviion").is_some());
+		assert!(matches.get_one::<String>("revision").is_some());
 	}
 
 	#[test]
 	fn rev_arg_exists_shorthand() {
 		let command = build_command();
 		let matches = command.get_matches_from(vec!["git-less", "-r", "object"]);
-		assert!(matches.get_one::<String>("reviion").is_some());
+		assert!(matches.get_one::<String>("revision").is_some());
 	}
 
 	#[test]
 	fn rev_arg_match() {
 		let command = build_command();
 		let matches = command.get_matches_from(vec!["git-less", "--rev", "object"]);
-		match matches.get_one::<String>("reviion") {
+		match matches.get_one::<String>("revision") {
 			Some(result) => assert_eq!(result, "object"),
 			None => panic!("ref arg not found"),
 		}
