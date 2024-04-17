@@ -18,6 +18,15 @@ pub fn exec_ls_tree(rev: RepositoryObject, option: GitTreeOption) -> Result<impl
 		.stream_stdout()
 }
 
+/// execute `git cat-file -p` command and return stdout stream
+pub fn exec_cat_file(hash: String) -> Result<impl Read> {
+	Exec::cmd("git")
+		.arg("cat-file")
+		.arg("-p")
+		.arg(hash)
+		.stream_stdout()
+}
+
 /// extract exit code from `subprocess::ExitStatus`,
 /// return value when only ExitStatus is `ExitStatus::Exited`.
 pub fn extract_status_code(status: ExitStatus) -> Option<u32> {

@@ -1,7 +1,8 @@
-pub mod object;
+pub mod cat;
 pub mod exec;
 pub mod tree;
 pub mod parse;
+pub mod object;
 
 pub struct Git {}
 

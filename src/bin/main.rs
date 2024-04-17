@@ -3,6 +3,7 @@ use core::panic;
 use git_less::git::{
 	Git,
 	tree::{GitTree, GitTreeOption},
+	cat::GitCat,
 	object::RepositoryObject,
 	parse::TreeParser
 };
@@ -22,7 +23,11 @@ fn app() -> Result<(), Box<dyn std::error::Error>> {
 	let output = GitTree::exec(rev, option)?;
 	let parser = TreeParser::new(output);
 	let items = parser.parse()?;
-	println!("{:#?}", items);
+	let hash: String = items[0].hash.clone();
+
+	let contents = GitCat::exec(hash.clone())?;
+	println!("{}", contents);
+	println!("target hash: '{}'", hash);
 	Ok(())
 }
 
