@@ -1,30 +1,36 @@
-use std::io::Read;
-use subprocess::{Exec, NullFile, ExitStatus};
+use std::fmt;
+use std::error;
+use subprocess::{Exec, NullFile, ExitStatus, Redirection, CaptureData, PopenError};
 use crate::git::{object::RepositoryObject, tree::GitTreeOption};
 
-pub type Result<T> = subprocess::Result<T>;
 
 /// execute `type git` command for checking git command exists
-pub fn exec_type_git() -> Result<ExitStatus> {
+pub fn exec_type_git() -> subprocess::Result<ExitStatus> {
 	Exec::cmd("type").arg("git").stdout(NullFile).join()
 }
 
-/// execute `gt ls-tree` command and return stdout stream
-pub fn exec_ls_tree(rev: RepositoryObject, option: GitTreeOption) -> Result<impl Read> {
-	Exec::cmd("git")
+/// execute `gt ls-tree` command and return stdout string or error
+pub fn exec_ls_tree(rev: RepositoryObject, option: GitTreeOption) -> Result<String, ExecuteError> {
+	let result = Exec::cmd("git")
 		.arg("ls-tree")
 		.arg(if option.recursive { "-r" } else { "" })
 		.arg(rev.to_arg())
-		.stream_stdout()
+		.stdout(Redirection::Pipe)
+		.stderr(Redirection::Pipe)
+		.capture();
+	process_captured_result(result)
 }
 
-/// execute `git cat-file -p` command and return stdout stream
-pub fn exec_cat_file(hash: String) -> Result<impl Read> {
-	Exec::cmd("git")
+/// execute `git cat-file -p` command and return stdout string or error
+pub fn exec_cat_file(hash: String) -> Result<String, ExecuteError> {
+	let result = Exec::cmd("git")
 		.arg("cat-file")
 		.arg("-p")
 		.arg(hash)
-		.stream_stdout()
+		.stdout(Redirection::Pipe)
+		.stderr(Redirection::Pipe)
+		.capture();
+	process_captured_result(result)
 }
 
 /// extract exit code from `subprocess::ExitStatus`,
@@ -36,15 +42,43 @@ pub fn extract_status_code(status: ExitStatus) -> Option<u32> {
 	}
 }
 
-/// get output from stream what `impl std::io::Read`
-pub fn get_output_from_stream(stream: &mut impl Read) -> Option<String> {
-	let mut output = String::new();
-	let result = stream.read_to_string(&mut output);
+/// return stdout string if the `result` arg is Ok and exit status is success.
+/// if the `result` arg is Err or exit status is failed, return stderr string.
+pub fn process_captured_result(result: Result<CaptureData, PopenError>) -> Result<String, ExecuteError> {
 	match result {
-		Ok(_) => Some(output),
-		_ => None,
+		Ok(capture_data) => {
+			if capture_data.exit_status.success() {
+				Ok(capture_data.stdout_str())
+			} else {
+				Err(ExecuteError::new(capture_data.stderr_str()))
+			}
+		},
+		Err(e) => {
+			Err(ExecuteError::new(e.to_string()))
+		}
 	}
 }
+
+#[derive(Debug)]
+pub struct ExecuteError {
+	message: String,
+}
+
+impl ExecuteError {
+	pub fn new(message: String) -> ExecuteError {
+		ExecuteError {
+			message,
+		}
+	}
+}
+
+impl fmt::Display for ExecuteError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl error::Error for ExecuteError {}
 
 #[cfg(test)]
 mod tests {

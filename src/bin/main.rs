@@ -18,7 +18,7 @@ fn app() -> Result<(), Box<dyn std::error::Error>> {
 		_ => panic!("git command not found."),
 	}
 
-	let rev = RepositoryObject::revision("HEAD".to_string());
+	let rev = RepositoryObject::revision("H".to_string());
 	let option = GitTreeOption::new(true);
 	let output = GitTree::exec(rev, option)?;
 	let parser = TreeParser::new(output);
@@ -35,6 +35,6 @@ fn main() {
 	let result = app();
 	match result {
 		Ok(_) => (),
-		Err(e) => eprintln!("{}", e)
+		Err(e) => eprint!("Error: {}", e)
 	}
 }

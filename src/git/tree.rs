@@ -3,9 +3,8 @@ use crate::git::{exec, object::RepositoryObject};
 pub struct GitTree {}
 
 impl GitTree {
-	pub fn exec(rev: RepositoryObject, option: GitTreeOption) -> exec::Result<String> {
-		let mut stream = exec::exec_ls_tree(rev, option)?;
-		let output = exec::get_output_from_stream(&mut stream).unwrap();
+	pub fn exec(rev: RepositoryObject, option: GitTreeOption) -> Result<String, exec::ExecuteError> {
+		let output = exec::exec_ls_tree(rev, option)?;
 		Ok(output)
 	}
 }
