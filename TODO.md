@@ -26,6 +26,8 @@
 - [x] `parse`関数のパーシング部分を`parse_line`関数に抽出
 - [x] ハッシュ値から`cat-file -p`を実行して中身を取得
 - [x] `main`関数のネストが深くなるので`app`関数に抽出
+- [x] `TreeParser`のテストを書く
+- [x] `ls-tree`と`cat-file`のエラー処理をちゃんと書く
 
 ## あとでやる
 
