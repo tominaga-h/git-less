@@ -1,5 +1,5 @@
-use core::panic;
-
+use std::io::{self, ErrorKind};
+use git_less::select;
 use git_less::git::{
 	Git,
 	tree::{GitTree, GitTreeOption},
@@ -18,10 +18,15 @@ fn app() -> Result<(), Box<dyn std::error::Error>> {
 		_ => panic!("git command not found."),
 	}
 
-	let rev = RepositoryObject::revision("H".to_string());
+	let rev = RepositoryObject::revision("HEAD".to_string());
 	let option = GitTreeOption::new(true);
 	let output = GitTree::exec(rev, option)?;
-	let parser = TreeParser::new(output);
+	let selected = select::skim_select(output);
+	if selected.is_empty() {
+		return Err(Box::new(io::Error::new(ErrorKind::NotFound, "No item selected.")));
+	}
+
+	let parser = TreeParser::new(selected[0].output().to_string());
 	let items = parser.parse()?;
 	let hash: String = items[0].hash.clone();
 

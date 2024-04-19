@@ -31,4 +31,8 @@ impl TreeItem {
     pub fn new(hash: String, file: String) -> TreeItem {
         TreeItem { hash, file }
     }
+
+	pub fn format(&self) -> String {
+		format!("{} {}", self.hash, self.file)
+	}
 }
