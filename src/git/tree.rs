@@ -20,3 +20,15 @@ impl GitTreeOption {
 		}
 	}
 }
+
+#[derive(Debug)]
+pub struct TreeItem {
+    pub hash: String,
+    pub file: String,
+}
+
+impl TreeItem {
+    pub fn new(hash: String, file: String) -> TreeItem {
+        TreeItem { hash, file }
+    }
+}
