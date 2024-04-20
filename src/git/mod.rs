@@ -1,10 +1,10 @@
 pub mod cat;
-pub mod exec;
 pub mod tree;
 pub mod parse;
 pub mod object;
 
 use subprocess;
+use crate::exec;
 
 pub struct Git {}
 

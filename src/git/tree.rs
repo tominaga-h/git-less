@@ -1,4 +1,5 @@
-use crate::git::{exec, object::RepositoryObject};
+use crate::exec;
+use crate::git::object::RepositoryObject;
 
 pub struct GitTree {}
 
