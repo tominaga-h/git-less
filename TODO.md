@@ -29,6 +29,8 @@
 - [x] `TreeParser`のテストを書く
 - [x] `ls-tree`と`cat-file`のエラー処理をちゃんと書く
 - [x] `skim`で選択させる
+- [ ] `less`コマンドで`cat-file`の出力を読み込ませる
+- [x] `exec.rs`を`git`サブモジュールから分離させる
 
 ## main.rsの流れ
 
