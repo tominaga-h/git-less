@@ -29,12 +29,6 @@ read the contents of the selected file with the `less` command."#)
 				.help("A blob object")
 		)
 		.arg(
-			Arg::new("tree")
-				.long("tree")
-				.short('t')
-				.help("A tree object")
-		)
-		.arg(
 			Arg::new("revision")
 				.long("rev")
 				.short('r')

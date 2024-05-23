@@ -4,20 +4,66 @@ use subprocess::{Exec, NullFile, ExitStatus, Redirection, CaptureData, PopenErro
 use crate::git::{object::RepositoryObject, tree::GitTreeOption};
 
 
-/// execute `type git` command for checking git command exists
+/// execute `type git` command for checking `git` command exists
 pub fn exec_type_git() -> subprocess::Result<ExitStatus> {
 	Exec::cmd("type").arg("git").stdout(NullFile).join()
 }
 
+/// execute `type bat` command for checking `bat` command exists
+pub fn exec_type_bat() -> subprocess::Result<ExitStatus> {
+	Exec::cmd("type").arg("bat").stdout(NullFile).join()
+}
+
+/// execute `type less` command for checking `less` command exists
+pub fn exec_type_less() -> subprocess::Result<ExitStatus> {
+	Exec::cmd("type").arg("less").stdout(NullFile).join()
+}
+
+/// execute `bat` command with `input` string to stdin
+pub fn exec_bat(input: String) -> Result<(), Box<dyn error::Error>> {
+	let command = format!("echo '{:?}' | bat --", input);
+	let mut process = Exec::shell(command).popen()?;
+
+	let result = process.wait()?;
+	let status = extract_status_code(result).unwrap();
+	if status != 0 {
+		return Err(Box::new(ExecuteError::new("bat command exits as fail".to_string())));
+	}
+	Ok(())
+}
+
+/// execute `less` command with `input` string to stdin
+pub fn exec_less(input: String) -> Result<(), Box<dyn error::Error>> {
+	let command = format!("echo '{:?}' | less", input);
+	let mut process = Exec::shell(command).popen()?;
+
+	let result = process.wait()?;
+	let status = extract_status_code(result).unwrap();
+	if status != 0 {
+		return Err(Box::new(ExecuteError::new("less command exits as fail".to_string())));
+	}
+	Ok(())
+}
+
 /// execute `gt ls-tree` command and return stdout string or error
 pub fn exec_ls_tree(rev: RepositoryObject, option: GitTreeOption) -> Result<String, ExecuteError> {
-	let result = Exec::cmd("git")
-		.arg("ls-tree")
-		.arg(if option.recursive { "-r" } else { "" })
-		.arg(rev.to_arg())
+	let command = if option.recursive {
+		Exec::cmd("git").arg("ls-tree").arg("-r")
+	} else {
+		Exec::cmd("git").arg("ls-tree")
+	};
+	let result = command.arg(rev.to_arg())
 		.stdout(Redirection::Pipe)
 		.stderr(Redirection::Pipe)
 		.capture();
+
+	// let result = Exec::cmd("git")
+	// 	.arg("ls-tree")
+	// 	.arg(if option.recursive { "-r" } else { "" })
+	// 	.arg(rev.to_arg())
+	// 	.stdout(Redirection::Pipe)
+	// 	.stderr(Redirection::Pipe)
+	// 	.capture();
 	process_captured_result(result)
 }
 
