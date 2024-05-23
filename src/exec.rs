@@ -1,5 +1,6 @@
 use std::fmt;
 use std::error;
+use std::io::Write;
 use subprocess::{Exec, NullFile, ExitStatus, Redirection, CaptureData, PopenError};
 use crate::git::{object::RepositoryObject, tree::GitTreeOption};
 
@@ -21,28 +22,38 @@ pub fn exec_type_less() -> subprocess::Result<ExitStatus> {
 
 /// execute `bat` command with `input` string to stdin
 pub fn exec_bat(input: String) -> Result<(), Box<dyn error::Error>> {
-	let command = format!("echo '{:?}' | bat --", input);
-	let mut process = Exec::shell(command).popen()?;
+    let mut process = Exec::cmd("bat")
+        .stdin(Redirection::Pipe)
+        .popen()?;
 
-	let result = process.wait()?;
-	let status = extract_status_code(result).unwrap();
-	if status != 0 {
-		return Err(Box::new(ExecuteError::new("bat command exits as fail".to_string())));
-	}
-	Ok(())
+    if let Some(mut stdin) = process.stdin.take() {
+        stdin.write_all(input.as_bytes())?;
+    }
+
+    let result = process.wait()?;
+    let status = extract_status_code(result).unwrap();
+    if status != 0 {
+        return Err(Box::new(ExecuteError::new("bat command exits as fail".to_string())));
+    }
+    Ok(())
 }
 
 /// execute `less` command with `input` string to stdin
 pub fn exec_less(input: String) -> Result<(), Box<dyn error::Error>> {
-	let command = format!("echo '{:?}' | less", input);
-	let mut process = Exec::shell(command).popen()?;
+    let mut process = Exec::cmd("less")
+        .stdin(Redirection::Pipe)
+        .popen()?;
 
-	let result = process.wait()?;
-	let status = extract_status_code(result).unwrap();
-	if status != 0 {
-		return Err(Box::new(ExecuteError::new("less command exits as fail".to_string())));
-	}
-	Ok(())
+    if let Some(mut stdin) = process.stdin.take() {
+        stdin.write_all(input.as_bytes())?;
+    }
+
+    let result = process.wait()?;
+    let status = extract_status_code(result).unwrap();
+    if status != 0 {
+        return Err(Box::new(ExecuteError::new("bat command exits as fail".to_string())));
+    }
+    Ok(())
 }
 
 /// execute `gt ls-tree` command and return stdout string or error
@@ -56,14 +67,6 @@ pub fn exec_ls_tree(rev: RepositoryObject, option: GitTreeOption) -> Result<Stri
 		.stdout(Redirection::Pipe)
 		.stderr(Redirection::Pipe)
 		.capture();
-
-	// let result = Exec::cmd("git")
-	// 	.arg("ls-tree")
-	// 	.arg(if option.recursive { "-r" } else { "" })
-	// 	.arg(rev.to_arg())
-	// 	.stdout(Redirection::Pipe)
-	// 	.stderr(Redirection::Pipe)
-	// 	.capture();
 	process_captured_result(result)
 }
 
